@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="ERP_Purchase_Approval" name="ERP采购审批流" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="提交采购单" />
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_Finance_Approval" />
+    <bpmn:serviceTask id="Activity_Finance_Approval" name="生成财务复核待办">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="generate_user_task" />
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_Finance_Approval" targetRef="EndEvent_1" />
+    <bpmn:endEvent id="EndEvent_1" name="审批完成" />
+  </bpmn:process>
+</bpmn:definitions>

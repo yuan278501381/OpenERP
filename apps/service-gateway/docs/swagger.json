@@ -1,0 +1,162 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "这是一个高度可扩展的开源 ERP 底座，支持动态字段(JSONB)、复杂审批流以及物料需求计划(MRP)。",
+        "title": "OpenERP 企业级信息化中枢 API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/openerp/v1/forms/{type}/meta": {
+            "get": {
+                "description": "根据表单类型（如: Material, PurchaseOrder）拉取注册在后端的所有自定义扩展字段配置。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "动态表单引擎 (Form Meta Engine)"
+                ],
+                "summary": "获取特定业务单据的动态表单元数据",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "表单类型 (e.g., Material)",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "允许企业在运行时给单据增加新字段（如：长度、颜色、等级），基于 JSONB 落地。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "动态表单引擎 (Form Meta Engine)"
+                ],
+                "summary": "为特定表单新增动态字段",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "表单类型 (e.g., Material)",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "字段配置参数",
+                        "name": "field",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysFormField"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/openerp/v1/materials": {
+            "get": {
+                "description": "从数据库拉取全部的物料主数据，支持包含基于 JSONB 的动态扩展字段。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "物料管理 (Material Master)"
+                ],
+                "summary": "获取物料主数据列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.SysFormField": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "fieldKey": {
+                    "type": "string"
+                },
+                "fieldType": {
+                    "type": "string"
+                },
+                "formType": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isRequired": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "optionsJSON": {
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

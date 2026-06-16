@@ -1,0 +1,108 @@
+basePath: /
+definitions:
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.SysFormField:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      fieldKey:
+        type: string
+      fieldType:
+        type: string
+      formType:
+        type: string
+      id:
+        type: integer
+      isRequired:
+        type: boolean
+      label:
+        type: string
+      optionsJSON:
+        type: string
+      sortOrder:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: 这是一个高度可扩展的开源 ERP 底座，支持动态字段(JSONB)、复杂审批流以及物料需求计划(MRP)。
+  title: OpenERP 企业级信息化中枢 API
+  version: "1.0"
+paths:
+  /openerp/v1/forms/{type}/meta:
+    get:
+      consumes:
+      - application/json
+      description: '根据表单类型（如: Material, PurchaseOrder）拉取注册在后端的所有自定义扩展字段配置。'
+      parameters:
+      - description: 表单类型 (e.g., Material)
+        in: path
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取特定业务单据的动态表单元数据
+      tags:
+      - 动态表单引擎 (Form Meta Engine)
+    post:
+      consumes:
+      - application/json
+      description: 允许企业在运行时给单据增加新字段（如：长度、颜色、等级），基于 JSONB 落地。
+      parameters:
+      - description: 表单类型 (e.g., Material)
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: 字段配置参数
+        in: body
+        name: field
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysFormField'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 为特定表单新增动态字段
+      tags:
+      - 动态表单引擎 (Form Meta Engine)
+  /openerp/v1/materials:
+    get:
+      consumes:
+      - application/json
+      description: 从数据库拉取全部的物料主数据，支持包含基于 JSONB 的动态扩展字段。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取物料主数据列表
+      tags:
+      - 物料管理 (Material Master)
+swagger: "2.0"
