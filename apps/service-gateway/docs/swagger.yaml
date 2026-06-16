@@ -8,6 +8,54 @@ definitions:
         description: Valid is true if Time is not NULL
         type: boolean
     type: object
+  models.SysBusinessPartner:
+    properties:
+      bpCode:
+        type: string
+      bpName:
+        type: string
+      bpType:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      extData:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      taxID:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.SysExpenseClaim:
+    properties:
+      amount:
+        type: number
+      claimNo:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      employeeID:
+        type: string
+      extData:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      reason:
+        type: string
+      status:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   models.SysFormField:
     properties:
       createdAt:
@@ -33,6 +81,121 @@ definitions:
       updatedAt:
         type: string
     type: object
+  models.SysGLAccount:
+    properties:
+      accountCode:
+        type: string
+      accountName:
+        type: string
+      accountType:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      extData:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  models.SysOrganization:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      extData:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      orgCode:
+        type: string
+      orgName:
+        type: string
+      orgType:
+        type: string
+      parentID:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  models.SysProductionOrder:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      extData:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      itemCode:
+        type: string
+      orderNo:
+        type: string
+      plannedQty:
+        type: number
+      status:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.SysSalesOrder:
+    properties:
+      bpID:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      docNo:
+        type: string
+      extData:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      lines:
+        items:
+          $ref: '#/definitions/models.SysSalesOrderLine'
+        type: array
+      totalAmount:
+        type: number
+      updatedAt:
+        type: string
+    type: object
+  models.SysSalesOrderLine:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      docID:
+        type: integer
+      extData:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      itemCode:
+        type: string
+      qty:
+        type: number
+      unitPrice:
+        type: number
+      updatedAt:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -40,6 +203,176 @@ info:
   title: OpenERP 企业级信息化中枢 API
   version: "1.0"
 paths:
+  /openerp/v1/business-partners:
+    get:
+      consumes:
+      - application/json
+      description: 获取业务伙伴列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取业务伙伴列表
+      tags:
+      - 业务伙伴管理
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的业务伙伴（客户或供应商）
+      parameters:
+      - description: 业务伙伴数据
+        in: body
+        name: partner
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysBusinessPartner'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 创建业务伙伴
+      tags:
+      - 业务伙伴管理
+  /openerp/v1/business-partners/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除业务伙伴
+      parameters:
+      - description: 业务伙伴ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除业务伙伴
+      tags:
+      - 业务伙伴管理
+    put:
+      consumes:
+      - application/json
+      description: 更新业务伙伴数据
+      parameters:
+      - description: 业务伙伴ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 业务伙伴数据
+        in: body
+        name: partner
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysBusinessPartner'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 更新业务伙伴
+      tags:
+      - 业务伙伴管理
+  /openerp/v1/expense-claims:
+    get:
+      description: 获取所有的费用报销单
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取费用报销单列表
+      tags:
+      - ExpenseClaim
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的费用报销单
+      parameters:
+      - description: 报销单信息
+        in: body
+        name: claim
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysExpenseClaim'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 创建费用报销单
+      tags:
+      - ExpenseClaim
+  /openerp/v1/expense-claims/{id}:
+    delete:
+      description: 删除指定的费用报销单
+      parameters:
+      - description: 报销单ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除费用报销单
+      tags:
+      - ExpenseClaim
+    put:
+      consumes:
+      - application/json
+      description: 更新现有的费用报销单
+      parameters:
+      - description: 报销单ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 报销单信息
+        in: body
+        name: claim
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysExpenseClaim'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 更新费用报销单
+      tags:
+      - ExpenseClaim
   /openerp/v1/forms/{type}/meta:
     get:
       consumes:
@@ -89,6 +422,89 @@ paths:
       summary: 为特定表单新增动态字段
       tags:
       - 动态表单引擎 (Form Meta Engine)
+  /openerp/v1/gl-accounts:
+    get:
+      description: 获取所有的总账科目
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取总账科目列表
+      tags:
+      - GLAccount
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的总账科目
+      parameters:
+      - description: 总账科目信息
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysGLAccount'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 创建总账科目
+      tags:
+      - GLAccount
+  /openerp/v1/gl-accounts/{id}:
+    delete:
+      description: 删除指定的总账科目
+      parameters:
+      - description: 科目ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除总账科目
+      tags:
+      - GLAccount
+    put:
+      consumes:
+      - application/json
+      description: 更新现有的总账科目
+      parameters:
+      - description: 科目ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 总账科目信息
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysGLAccount'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 更新总账科目
+      tags:
+      - GLAccount
   /openerp/v1/materials:
     get:
       consumes:
@@ -105,4 +521,261 @@ paths:
       summary: 获取物料主数据列表
       tags:
       - 物料管理 (Material Master)
+  /openerp/v1/organizations:
+    get:
+      description: 获取组织架构列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取组织架构列表
+      tags:
+      - Organization
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的组织架构节点
+      parameters:
+      - description: 组织架构信息
+        in: body
+        name: organization
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysOrganization'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 创建组织架构
+      tags:
+      - Organization
+  /openerp/v1/organizations/{id}:
+    delete:
+      description: 删除指定的组织架构节点
+      parameters:
+      - description: 组织ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除组织架构
+      tags:
+      - Organization
+    put:
+      consumes:
+      - application/json
+      description: 更新现有的组织架构节点
+      parameters:
+      - description: 组织ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 组织架构信息
+        in: body
+        name: organization
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysOrganization'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 更新组织架构
+      tags:
+      - Organization
+  /openerp/v1/production-orders:
+    get:
+      consumes:
+      - application/json
+      description: 获取生产订单列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取生产订单列表
+      tags:
+      - 生产管理
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的生产订单
+      parameters:
+      - description: 生产订单数据
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysProductionOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 创建生产订单
+      tags:
+      - 生产管理
+  /openerp/v1/production-orders/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除生产订单
+      parameters:
+      - description: 订单ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除生产订单
+      tags:
+      - 生产管理
+    put:
+      consumes:
+      - application/json
+      description: 更新生产订单
+      parameters:
+      - description: 订单ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 生产订单数据
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysProductionOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 更新生产订单
+      tags:
+      - 生产管理
+  /openerp/v1/sales-orders:
+    get:
+      consumes:
+      - application/json
+      description: 获取包含行项目的销售订单列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取销售订单列表
+      tags:
+      - 销售管理
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的销售订单及其行项目
+      parameters:
+      - description: 销售订单数据
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysSalesOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 创建销售订单
+      tags:
+      - 销售管理
+  /openerp/v1/sales-orders/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除销售订单（及其行项目）
+      parameters:
+      - description: 订单ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除销售订单
+      tags:
+      - 销售管理
+    put:
+      consumes:
+      - application/json
+      description: 更新销售订单及其关联项目
+      parameters:
+      - description: 订单ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 销售订单数据
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/models.SysSalesOrder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 更新销售订单
+      tags:
+      - 销售管理
 swagger: "2.0"

@@ -1,45 +1,33 @@
-import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { MainLayout } from './components/Layout/MainLayout';
 import { TaskCenter } from './pages/TaskCenter';
 import { PurchaseRequest } from './pages/PurchaseRequest';
-import { LayoutDashboard, FilePlus } from 'lucide-react';
-import './App.css';
+import { MaterialDashboard } from './pages/Materials/MaterialDashboard';
+import { useTranslation } from 'react-i18next';
+import './App.css'; // Keep if any global app-specific styles left, otherwise can be empty
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'tasks' | 'purchase'>('tasks');
-
+  const { t } = useTranslation();
   return (
-    <div className="app-layout">
-      <nav className="glass-sidebar">
-        <div className="logo-area">
-          <div className="logo-dot"></div>
-          <h1>OpenERP</h1>
-        </div>
-        
-        <div className="nav-menu">
-          <button 
-            className={`nav-item ${activeTab === 'tasks' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tasks')}
-          >
-            <LayoutDashboard size={20} />
-            <span>统一待办大厅</span>
-          </button>
-          
-          <button 
-            className={`nav-item ${activeTab === 'purchase' ? 'active' : ''}`}
-            onClick={() => setActiveTab('purchase')}
-          >
-            <FilePlus size={20} />
-            <span>采购申请 (发单)</span>
-          </button>
-        </div>
-      </nav>
-
-      <main className="app-content">
-        {activeTab === 'tasks' && <TaskCenter />}
-        {activeTab === 'purchase' && <PurchaseRequest />}
-      </main>
-    </div>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<TaskCenter />} />
+          <Route path="master-data" element={<MaterialDashboard />} />
+          <Route path="sales" element={<div className="panel p-4">{t('Sales & Distribution')}{t('Coming Soon')}</div>} />
+          <Route path="purchase" element={<PurchaseRequest />} />
+          <Route path="inventory" element={<div className="panel p-4">{t('Inventory Management')}{t('Coming Soon')}</div>} />
+          <Route path="production" element={<div className="panel p-4">{t('Production (PP)')}{t('Coming Soon')}</div>} />
+          <Route path="quality" element={<div className="panel p-4">{t('Quality Management')}{t('Coming Soon')}</div>} />
+          <Route path="maintenance" element={<div className="panel p-4">{t('Plant Maintenance')}{t('Coming Soon')}</div>} />
+          <Route path="finance" element={<div className="panel p-4">{t('Finance (FI/CO)')}{t('Coming Soon')}</div>} />
+          <Route path="hr" element={<div className="panel p-4">{t('Human Resources')}{t('Coming Soon')}</div>} />
+          <Route path="system" element={<div className="panel p-4">{t('System & Org')}{t('Coming Soon')}</div>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;

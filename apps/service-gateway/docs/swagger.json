@@ -9,6 +9,260 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
+        "/openerp/v1/business-partners": {
+            "get": {
+                "description": "获取业务伙伴列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "业务伙伴管理"
+                ],
+                "summary": "获取业务伙伴列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建一个新的业务伙伴（客户或供应商）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "业务伙伴管理"
+                ],
+                "summary": "创建业务伙伴",
+                "parameters": [
+                    {
+                        "description": "业务伙伴数据",
+                        "name": "partner",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysBusinessPartner"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/openerp/v1/business-partners/{id}": {
+            "put": {
+                "description": "更新业务伙伴数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "业务伙伴管理"
+                ],
+                "summary": "更新业务伙伴",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "业务伙伴ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "业务伙伴数据",
+                        "name": "partner",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysBusinessPartner"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "根据ID删除业务伙伴",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "业务伙伴管理"
+                ],
+                "summary": "删除业务伙伴",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "业务伙伴ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/openerp/v1/expense-claims": {
+            "get": {
+                "description": "获取所有的费用报销单",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ExpenseClaim"
+                ],
+                "summary": "获取费用报销单列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建一个新的费用报销单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ExpenseClaim"
+                ],
+                "summary": "创建费用报销单",
+                "parameters": [
+                    {
+                        "description": "报销单信息",
+                        "name": "claim",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysExpenseClaim"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/openerp/v1/expense-claims/{id}": {
+            "put": {
+                "description": "更新现有的费用报销单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ExpenseClaim"
+                ],
+                "summary": "更新费用报销单",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "报销单ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "报销单信息",
+                        "name": "claim",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysExpenseClaim"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定的费用报销单",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ExpenseClaim"
+                ],
+                "summary": "删除费用报销单",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "报销单ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/openerp/v1/forms/{type}/meta": {
             "get": {
                 "description": "根据表单类型（如: Material, PurchaseOrder）拉取注册在后端的所有自定义扩展字段配置。",
@@ -82,6 +336,130 @@
                 }
             }
         },
+        "/openerp/v1/gl-accounts": {
+            "get": {
+                "description": "获取所有的总账科目",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GLAccount"
+                ],
+                "summary": "获取总账科目列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建一个新的总账科目",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GLAccount"
+                ],
+                "summary": "创建总账科目",
+                "parameters": [
+                    {
+                        "description": "总账科目信息",
+                        "name": "account",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysGLAccount"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/openerp/v1/gl-accounts/{id}": {
+            "put": {
+                "description": "更新现有的总账科目",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GLAccount"
+                ],
+                "summary": "更新总账科目",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "科目ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "总账科目信息",
+                        "name": "account",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysGLAccount"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定的总账科目",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GLAccount"
+                ],
+                "summary": "删除总账科目",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "科目ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/openerp/v1/materials": {
             "get": {
                 "description": "从数据库拉取全部的物料主数据，支持包含基于 JSONB 的动态扩展字段。",
@@ -105,6 +483,390 @@
                     }
                 }
             }
+        },
+        "/openerp/v1/organizations": {
+            "get": {
+                "description": "获取组织架构列表",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "获取组织架构列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建一个新的组织架构节点",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "创建组织架构",
+                "parameters": [
+                    {
+                        "description": "组织架构信息",
+                        "name": "organization",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysOrganization"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/openerp/v1/organizations/{id}": {
+            "put": {
+                "description": "更新现有的组织架构节点",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "更新组织架构",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "组织ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "组织架构信息",
+                        "name": "organization",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysOrganization"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定的组织架构节点",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "删除组织架构",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "组织ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/openerp/v1/production-orders": {
+            "get": {
+                "description": "获取生产订单列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "生产管理"
+                ],
+                "summary": "获取生产订单列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建一个新的生产订单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "生产管理"
+                ],
+                "summary": "创建生产订单",
+                "parameters": [
+                    {
+                        "description": "生产订单数据",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysProductionOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/openerp/v1/production-orders/{id}": {
+            "put": {
+                "description": "更新生产订单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "生产管理"
+                ],
+                "summary": "更新生产订单",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "订单ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "生产订单数据",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysProductionOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除生产订单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "生产管理"
+                ],
+                "summary": "删除生产订单",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "订单ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/openerp/v1/sales-orders": {
+            "get": {
+                "description": "获取包含行项目的销售订单列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "销售管理"
+                ],
+                "summary": "获取销售订单列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建一个新的销售订单及其行项目",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "销售管理"
+                ],
+                "summary": "创建销售订单",
+                "parameters": [
+                    {
+                        "description": "销售订单数据",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysSalesOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/openerp/v1/sales-orders/{id}": {
+            "put": {
+                "description": "更新销售订单及其关联项目",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "销售管理"
+                ],
+                "summary": "更新销售订单",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "订单ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "销售订单数据",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SysSalesOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "根据ID删除销售订单（及其行项目）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "销售管理"
+                ],
+                "summary": "删除销售订单",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "订单ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -117,6 +879,79 @@
                 "valid": {
                     "description": "Valid is true if Time is not NULL",
                     "type": "boolean"
+                }
+            }
+        },
+        "models.SysBusinessPartner": {
+            "type": "object",
+            "properties": {
+                "bpCode": {
+                    "type": "string"
+                },
+                "bpName": {
+                    "type": "string"
+                },
+                "bpType": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "extData": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "taxID": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SysExpenseClaim": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "claimNo": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "employeeID": {
+                    "type": "string"
+                },
+                "extData": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },
@@ -152,6 +987,181 @@
                 },
                 "sortOrder": {
                     "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SysGLAccount": {
+            "type": "object",
+            "properties": {
+                "accountCode": {
+                    "type": "string"
+                },
+                "accountName": {
+                    "type": "string"
+                },
+                "accountType": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "extData": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SysOrganization": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "extData": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "orgCode": {
+                    "type": "string"
+                },
+                "orgName": {
+                    "type": "string"
+                },
+                "orgType": {
+                    "type": "string"
+                },
+                "parentID": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SysProductionOrder": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "extData": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "itemCode": {
+                    "type": "string"
+                },
+                "orderNo": {
+                    "type": "string"
+                },
+                "plannedQty": {
+                    "type": "number"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SysSalesOrder": {
+            "type": "object",
+            "properties": {
+                "bpID": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "docNo": {
+                    "type": "string"
+                },
+                "extData": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SysSalesOrderLine"
+                    }
+                },
+                "totalAmount": {
+                    "type": "number"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SysSalesOrderLine": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "docID": {
+                    "type": "integer"
+                },
+                "extData": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "itemCode": {
+                    "type": "string"
+                },
+                "qty": {
+                    "type": "number"
+                },
+                "unitPrice": {
+                    "type": "number"
                 },
                 "updatedAt": {
                     "type": "string"

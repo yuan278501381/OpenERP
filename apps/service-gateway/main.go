@@ -53,6 +53,71 @@ func main() {
 	db.DB.AutoMigrate(&models.SysBOM{})
 	db.DB.AutoMigrate(&models.SysFormField{})
 
+	// Stage 1 Models
+	db.DB.AutoMigrate(
+		&models.SysOrganization{},
+		&models.SysFinancialPeriod{},
+		&models.SysPaymentTerm{},
+		&models.SysUoMGroup{},
+		&models.SysAccountDetermination{},
+		&models.SysNotificationTemplate{},
+	)
+
+	// Stage 2 Models
+	db.DB.AutoMigrate(
+		&models.SysGLAccount{},
+		&models.SysJournalEntry{},
+		&models.SysJournalEntryLine{},
+		&models.SysCostCenter{},
+		&models.SysBudget{},
+		&models.SysARInvoice{},
+		&models.SysAPInvoice{},
+		&models.SysPayment{},
+		&models.SysReconciliation{},
+		&models.SysExpenseClaim{},
+		&models.SysFixedAsset{},
+		&models.SysBillOfExchange{},
+		&models.SysExchangeRate{},
+		&models.SysTaxGroup{},
+		&models.SysTaxInvoice{},
+	)
+
+	// Stage 3 Models
+	db.DB.AutoMigrate(
+		&models.SysBatch{},
+		&models.SysSerialNumber{},
+		&models.SysBusinessPartner{},
+		&models.SysPricingCondition{},
+		&models.SysSalesQuotation{},
+		&models.SysSalesOrder{},
+		&models.SysSalesOrderLine{},
+		&models.SysDelivery{},
+		&models.SysSalesReturnRequest{},
+		&models.SysSalesReturn{},
+		&models.SysPurchaseRequisition{},
+		&models.SysPurchaseOrderLine{},
+		&models.SysLandedCost{},
+		&models.SysPurchaseReturnRequest{},
+		&models.SysPurchaseReturn{},
+		&models.SysGoodsMovement{},
+		&models.SysInventoryTransferRequest{},
+		&models.SysInventoryTransfer{},
+		&models.SysInventoryCounting{},
+		&models.SysWarehouseBin{},
+		&models.SysInventoryValuation{},
+	)
+
+	// Stage 4 Models
+	db.DB.AutoMigrate(
+		&models.SysWorkCenter{},
+		&models.SysResource{},
+		&models.SysRouting{},
+		&models.SysProductionOrder{},
+		&models.SysInspectionLot{},
+		&models.SysEquipment{},
+		&models.SysEmployee{},
+	)
+
 	// 2. 初始化 BPMN 引擎客户端 (Zeebe)
 	workflow.InitZeebe()
 
@@ -187,6 +252,42 @@ func main() {
 
 	// 物料主数据接口
 	r.GET("/openerp/v1/materials", v1.GetMaterials)
+
+	// Organizations API
+	r.POST("/openerp/v1/organizations", v1.CreateOrganization)
+	r.GET("/openerp/v1/organizations", v1.GetOrganizations)
+	r.PUT("/openerp/v1/organizations/:id", v1.UpdateOrganization)
+	r.DELETE("/openerp/v1/organizations/:id", v1.DeleteOrganization)
+
+	// GLAccounts API
+	r.POST("/openerp/v1/gl-accounts", v1.CreateGLAccount)
+	r.GET("/openerp/v1/gl-accounts", v1.GetGLAccounts)
+	r.PUT("/openerp/v1/gl-accounts/:id", v1.UpdateGLAccount)
+	r.DELETE("/openerp/v1/gl-accounts/:id", v1.DeleteGLAccount)
+
+	// ExpenseClaims API
+	r.POST("/openerp/v1/expense-claims", v1.CreateExpenseClaim)
+	r.GET("/openerp/v1/expense-claims", v1.GetExpenseClaims)
+	r.PUT("/openerp/v1/expense-claims/:id", v1.UpdateExpenseClaim)
+	r.DELETE("/openerp/v1/expense-claims/:id", v1.DeleteExpenseClaim)
+
+	// Business Partners API
+	r.POST("/openerp/v1/business-partners", v1.CreateBusinessPartner)
+	r.GET("/openerp/v1/business-partners", v1.GetBusinessPartners)
+	r.PUT("/openerp/v1/business-partners/:id", v1.UpdateBusinessPartner)
+	r.DELETE("/openerp/v1/business-partners/:id", v1.DeleteBusinessPartner)
+
+	// Sales Orders API
+	r.POST("/openerp/v1/sales-orders", v1.CreateSalesOrder)
+	r.GET("/openerp/v1/sales-orders", v1.GetSalesOrders)
+	r.PUT("/openerp/v1/sales-orders/:id", v1.UpdateSalesOrder)
+	r.DELETE("/openerp/v1/sales-orders/:id", v1.DeleteSalesOrder)
+
+	// Production Orders API
+	r.POST("/openerp/v1/production-orders", v1.CreateProductionOrder)
+	r.GET("/openerp/v1/production-orders", v1.GetProductionOrders)
+	r.PUT("/openerp/v1/production-orders/:id", v1.UpdateProductionOrder)
+	r.DELETE("/openerp/v1/production-orders/:id", v1.DeleteProductionOrder)
 
 	bgLog.Info("API Gateway 成功启动，监听在 :8080 端口")
 	if err := r.Run(":8080"); err != nil {

@@ -1,27 +1,39 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* 极致深色模式色板 */
-  --bg-primary: #0B0E14;
-  --bg-secondary: rgba(22, 27, 34, 0.6);
-  --text-primary: #E2E8F0;
-  --text-secondary: #94A3B8;
+  /* Dense & Light Theme */
+  --bg-primary: #f0f2f5;
+  --bg-secondary: #ffffff;
+  --bg-hover: #f9fafb;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
   
-  /* 品牌与状态色 */
-  --brand-accent: #3B82F6;
-  --brand-glow: rgba(59, 130, 246, 0.5);
-  --status-normal: #10B981;
-  --status-warning: #F59E0B;
-  --status-critical: #EF4444;
+  --border-color: #e5e7eb;
+  --border-light: #f3f4f6;
 
-  /* 玻璃拟态设计变量 */
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: blur(16px);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  /* Brand Colors */
+  --brand-accent: #2563eb;
+  --brand-accent-hover: #1d4ed8;
+  --brand-glow: rgba(37, 99, 235, 0.2);
+
+  /* Status Colors */
+  --status-normal: #10b981;
+  --status-warning: #f59e0b;
+  --status-critical: #ef4444;
+
+  /* Typography & Sizing for Dense layout */
+  --font-xs: 11px;
+  --font-sm: 12px;
+  --font-md: 13px; /* standard dense size */
+  --font-lg: 14px;
   
-  /* 动画曲线 */
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+
+  /* Animation */
+  --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -31,86 +43,132 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  min-height: 100vh;
-  /* 使用刚才生成的顶级背景图 */
-  background-image: url('./assets/bg.png');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  /* 增加暗色遮罩以保证文字对比度 */
-  box-shadow: inset 0 0 0 2000px rgba(11, 14, 20, 0.85);
-  overflow-x: hidden;
+  font-size: var(--font-md);
+  line-height: 1.4;
+  height: 100vh;
+  overflow: hidden; /* layout handles scrolling */
 }
 
-/* 玻璃拟态卡片全局样式 */
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  box-shadow: var(--glass-shadow);
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
-/* 微动画按钮 */
-.btn-primary {
-  background: linear-gradient(135deg, var(--brand-accent) 0%, #2563EB 100%);
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
+button {
+  font-family: inherit;
+}
+
+/* Base Card / Panel */
+.panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Micro-animations */
+.hover-lift {
+  transition: var(--transition-smooth);
+}
+.hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: 6px 12px;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  border-radius: 4px;
   cursor: pointer;
   transition: var(--transition-smooth);
-  box-shadow: 0 4px 12px var(--brand-glow);
+  border: 1px solid transparent;
 }
 
+.btn-primary {
+  background-color: var(--brand-accent);
+  color: white;
+  box-shadow: 0 1px 2px var(--brand-glow);
+}
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px var(--brand-glow);
-  filter: brightness(1.1);
+  background-color: var(--brand-accent-hover);
 }
 
-.btn-primary:active {
-  transform: translateY(0);
+.btn-secondary {
+  background-color: white;
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+.btn-secondary:hover {
+  background-color: var(--bg-hover);
 }
 
-/* 状态药丸标签 */
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+/* Data Grid (Dense HTML Table) */
+.data-grid-container {
+  overflow: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: white;
+}
+
+.data-grid {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-grid th,
+.data-grid td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.data-grid th {
+  background-color: var(--bg-hover);
   font-weight: 600;
-  letter-spacing: 0.5px;
-}
-.status-badge.normal {
-  background: rgba(16, 185, 129, 0.15);
-  color: var(--status-normal);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-.status-badge.warning {
-  background: rgba(245, 158, 11, 0.15);
-  color: var(--status-warning);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  animation: pulse-warning 2s infinite;
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-@keyframes pulse-warning {
-  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+.data-grid tbody tr:hover {
+  background-color: var(--bg-hover);
 }
 
-/* 页面淡入动画 */
-.fade-in {
-  animation: fadeIn 0.6s ease-out forwards;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Overriding Vite root */
+#root {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  text-align: left;
 }

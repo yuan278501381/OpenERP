@@ -1,0 +1,103 @@
+.material-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  height: 100%;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.header-title h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+
+.error-state {
+  color: var(--status-critical);
+}
+
+/* Specific Cell Styles */
+.cell-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--font-xs);
+  color: var(--brand-accent);
+  font-weight: 600;
+}
+
+.cell-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.cell-number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-action {
+  text-align: right;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: inline-flex;
+  transition: var(--transition-smooth);
+}
+
+.icon-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge.active {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--status-normal);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-badge.inactive {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--status-warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}

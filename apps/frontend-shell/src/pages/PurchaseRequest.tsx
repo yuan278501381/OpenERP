@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { submitPurchaseOrder } from '../api/purchase';
+import { useTranslation } from 'react-i18next';
 import { Send, FilePlus, DollarSign, Package } from 'lucide-react';
 import './PurchaseRequest.css';
 
 export const PurchaseRequest: React.FC = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     title: '',
     amount: '',
@@ -30,7 +32,7 @@ export const PurchaseRequest: React.FC = () => {
       setTimeout(() => setSuccess(false), 4000);
       setFormData({ title: '', amount: '', customMaterial: '', customProject: '' });
     } catch (error) {
-      alert('提交失败，请检查网络');
+      alert(t('Submit Failed'));
     } finally {
       setLoading(false);
     }
@@ -41,30 +43,30 @@ export const PurchaseRequest: React.FC = () => {
       <div className="glass-form-card">
         <div className="form-header">
           <div className="icon-wrapper"><FilePlus size={28} /></div>
-          <h2>新建采购申请单</h2>
-          <p>提交后将自动触发 ERP 事件驱动工作流，生成审批待办</p>
+          <h2>{t('New Purchase Request')}</h2>
+          <p>{t('Submit description')}</p>
         </div>
 
         {success && (
           <div className="success-banner">
-            ✅ 提交成功！工作流已自动流转，请前往【统一待办】大厅查看生成的审批任务。
+            {t('Success Banner')}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="purchase-form">
           <div className="form-group">
-            <label>申请单标题</label>
+            <label>{t('PR Title')}</label>
             <input 
               required
               type="text" 
-              placeholder="例如：2026年Q3服务器硬件采购"
+              placeholder={t('PR Title Placeholder')}
               value={formData.title}
               onChange={e => setFormData({...formData, title: e.target.value})}
             />
           </div>
 
           <div className="form-group">
-            <label>预估总金额 (¥)</label>
+            <label>{t('Total Amount')}</label>
             <div className="input-with-icon">
               <DollarSign size={18} className="input-icon" />
               <input 
@@ -72,7 +74,7 @@ export const PurchaseRequest: React.FC = () => {
                 type="number" 
                 min="0"
                 step="0.01"
-                placeholder="0.00 (超过10万将触发特批流程)"
+                placeholder={t('Amount Placeholder')}
                 value={formData.amount}
                 onChange={e => setFormData({...formData, amount: e.target.value})}
               />
@@ -81,15 +83,15 @@ export const PurchaseRequest: React.FC = () => {
 
           {/* 这里的自定义字段将统一封装进入 JSONB 结构中，体现极致扩展性 */}
           <div className="custom-fields-section">
-            <div className="section-title">动态扩展表单字段 (ExtData JSONB)</div>
+            <div className="section-title">{t('Dynamic Fields Section')}</div>
             
             <div className="form-group">
-              <label>关联物料族 (MRP预留机制)</label>
+              <label>{t('Linked Material Group')}</label>
               <div className="input-with-icon">
                 <Package size={18} className="input-icon" />
                 <input 
                   type="text" 
-                  placeholder="例如：PCB主板 / 高频芯片组"
+                  placeholder={t('Material Placeholder')}
                   value={formData.customMaterial}
                   onChange={e => setFormData({...formData, customMaterial: e.target.value})}
                 />
@@ -97,10 +99,10 @@ export const PurchaseRequest: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label>归属项目组代码</label>
+              <label>{t('Project Code')}</label>
               <input 
                 type="text" 
-                placeholder="例如：Project-A-Secret"
+                placeholder={t('Project Placeholder')}
                 value={formData.customProject}
                 onChange={e => setFormData({...formData, customProject: e.target.value})}
               />
@@ -108,7 +110,7 @@ export const PurchaseRequest: React.FC = () => {
           </div>
 
           <button type="submit" className="submit-btn" disabled={loading}>
-            <Send size={18} /> {loading ? '业务处理与事件分发中...' : '提交采购单 (触发流程)'}
+            <Send size={18} /> {loading ? t('Processing') : t('Submit PR')}
           </button>
         </form>
       </div>

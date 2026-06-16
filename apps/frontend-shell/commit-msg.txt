@@ -1,0 +1,12 @@
+feat(ui): 实现Stage 5 基础UI架构及物料主数据大盘
+
+业务视角：
+- 搭建全新的基于Dense & Light Theme的主数据大盘界面，提升ERP高频操作环境下的信息密度。
+- 新增“物料主数据(Material Master Data)”模块，支持列表展示、基础筛选、导出和新建占位功能。
+- 提供结构清晰的侧边栏导航，支持物料、销售订单、采购订单与财务模块入口。
+
+技术视角：
+- 使用React Router DOM重构App.tsx，引入标准MainLayout/Sidebar/Header布局机制。
+- 引入自定义Hook (useMaterials.ts) 分离状态管理与UI展示，符合单向数据流原则。
+- 提供全局统一的logger工具（支持traceid及日志分级），规范前端错误捕获与调试流程。
+- 引入测试目录规范（tests/）满足MCME及架构演进设计要求。

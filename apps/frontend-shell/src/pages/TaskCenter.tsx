@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { fetchTasks, type Task } from '../api/task';
+import { useTranslation } from 'react-i18next';
 import { TaskCard } from '../components/TaskCard';
 import './TaskCenter.css';
 
 export const TaskCenter: React.FC = () => {
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,8 +23,8 @@ export const TaskCenter: React.FC = () => {
     <div className="task-center-container">
       <header className="page-header fade-in">
         <div className="header-content">
-          <h1>统一任务中枢 (Task Center)</h1>
-          <p>事找人 · 智能协同 · 全局可视</p>
+          <h1>{t('Task Center')}</h1>
+          <p>{t('Task Subtitle')}</p>
         </div>
       </header>
       
@@ -30,7 +32,7 @@ export const TaskCenter: React.FC = () => {
         {loading ? (
           <div className="loading-state">
             <div className="spinner"></div>
-            <p>正在同步全系统待办...</p>
+            <p>{t('Syncing')}</p>
           </div>
         ) : (
           tasks.map(task => (
