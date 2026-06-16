@@ -9,7 +9,7 @@ class Logger {
     return Math.random().toString(36).substring(2, 15);
   }
 
-  private log(level: LogLevel, message: string, data?: any) {
+  private log(level: LogLevel, message: string, data?: unknown) {
     const traceId = this.generateTraceId();
     const timestamp = new Date().toISOString();
     const logPrefix = `[${timestamp}] [${level.toUpperCase()}] [TraceID: ${traceId}]`;
@@ -30,19 +30,19 @@ class Logger {
     }
   }
 
-  info(message: string, data?: any) {
+  info(message: string, data?: unknown) {
     this.log('info', message, data);
   }
 
-  warn(message: string, data?: any) {
+  warn(message: string, data?: unknown) {
     this.log('warn', message, data);
   }
 
-  error(message: string, data?: any) {
+  error(message: string, data?: unknown) {
     this.log('error', message, data);
   }
 
-  debug(message: string, data?: any) {
+  debug(message: string, data?: unknown) {
     this.log('debug', message, data);
   }
 }

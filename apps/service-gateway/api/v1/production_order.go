@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 // CreateProductionOrder godoc
@@ -100,5 +101,72 @@ func DeleteProductionOrder(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "删除失败"})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "success"})
+}
+
+// ReportCompletionRequest 报工请求参数
+type ReportCompletionRequest struct {
+	CompletedQty float64 `json:"completed_qty"`
+}
+
+// ReportCompletion godoc
+// @Summary 生产订单报工
+// @Description 生产订单报工，增加成品库存，扣减BOM组件库存
+// @Tags 生产管理
+// @Accept json
+// @Produce json
+// @Param id path int true "订单ID"
+// @Param request body ReportCompletionRequest true "报工参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /openerp/v1/production-orders/{id}/report-completion [post]
+func ReportCompletion(c *gin.Context) {
+	log := logger.Ctx(c.Request.Context())
+	id := c.Param("id")
+	var req ReportCompletionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "参数解析失败"})
+		return
+	}
+
+	err := db.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. 获取生产订单
+		var order models.SysProductionOrder
+		if err := tx.First(&order, id).Error; err != nil {
+			return err
+		}
+
+		// 2. 获取成品物料
+		var fgMaterial models.SysMaterial
+		if err := tx.Where("material_code = ?", order.ItemCode).First(&fgMaterial).Error; err != nil {
+			return err
+		}
+
+		// 3. 增加成品库存
+		if err := tx.Model(&models.SysMaterial{}).Where("id = ?", fgMaterial.ID).Update("stock", gorm.Expr("stock + ?", req.CompletedQty)).Error; err != nil {
+			return err
+		}
+
+		// 4. 获取BOM，扣减组件库存 (仅限单层BOM扣减)
+		var boms []models.SysBOM
+		if err := tx.Where("parent_material_id = ?", fgMaterial.ID).Find(&boms).Error; err != nil {
+			return err
+		}
+
+		for _, bom := range boms {
+			consumedQty := req.CompletedQty * bom.Quantity * (1 + bom.ScrapRate)
+			if err := tx.Model(&models.SysMaterial{}).Where("id = ?", bom.ChildMaterialID).Update("stock", gorm.Expr("stock - ?", consumedQty)).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		log.Error("报工失败", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "报工失败"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "success"})
 }

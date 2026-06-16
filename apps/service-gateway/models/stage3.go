@@ -29,11 +29,13 @@ type SysSerialNumber struct {
 // SysBusinessPartner 业务伙伴 (客户/供应商)
 type SysBusinessPartner struct {
 	gorm.Model
-	BpCode  string         `gorm:"type:varchar(64);uniqueIndex;comment:业务伙伴编码"`
-	BpName  string         `gorm:"type:varchar(255);comment:业务伙伴名称"`
-	BpType  string         `gorm:"type:varchar(32);comment:业务伙伴类型(Customer, Vendor)"`
-	TaxID   string         `gorm:"type:varchar(64);comment:税号"`
-	ExtData datatypes.JSON `gorm:"type:json;comment:扩展数据"`
+	BpCode             string         `gorm:"type:varchar(64);uniqueIndex;comment:业务伙伴编码"`
+	BpName             string         `gorm:"type:varchar(255);comment:业务伙伴名称"`
+	BpType             string         `gorm:"type:varchar(32);comment:业务伙伴类型(Customer, Vendor)"`
+	TaxID              string         `gorm:"type:varchar(64);comment:税号"`
+	IsRelatedParty     bool           `gorm:"type:boolean;comment:是否关联方"`
+	RelatedCompanyCode string         `gorm:"type:varchar(64);comment:关联公司编码"`
+	ExtData            datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
 // SysPricingCondition 定价条件
@@ -52,20 +54,44 @@ type SysPricingCondition struct {
 // SysSalesQuotation 销售报价单
 type SysSalesQuotation struct {
 	gorm.Model
-	DocNo       string         `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
-	BpID        string         `gorm:"type:varchar(64);index;comment:业务伙伴ID"`
-	TotalAmount float64        `gorm:"type:decimal(19,4);comment:总金额"`
-	ExtData     datatypes.JSON `gorm:"type:json;comment:扩展数据"`
+	DocNo            string                  `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
+	SoldToBpID       string                  `gorm:"type:varchar(64);index;comment:售达方ID"`
+	ShipToBpID       string                  `gorm:"type:varchar(64);index;comment:送达方ID"`
+	BillToBpID       string                  `gorm:"type:varchar(64);index;comment:收票方ID"`
+	PayerBpID        string                  `gorm:"type:varchar(64);index;comment:付款方ID"`
+	RelatedPartyCode string                  `gorm:"type:varchar(64);comment:关联方编码"`
+	EndCustomerCode  string                  `gorm:"type:varchar(64);comment:最终客户编码"`
+	TotalAmount      float64                 `gorm:"type:decimal(19,4);comment:总金额"`
+	Lines            []SysSalesQuotationLine `gorm:"foreignKey:DocID;comment:报价单行"`
+	ExtData          datatypes.JSON          `gorm:"type:json;comment:扩展数据"`
+}
+
+// SysSalesQuotationLine 销售报价单行
+type SysSalesQuotationLine struct {
+	gorm.Model
+	DocID     uint           `gorm:"type:bigint;index;comment:销售报价单ID"`
+	ItemCode  string         `gorm:"type:varchar(64);index;comment:物料编码"`
+	Qty       float64        `gorm:"type:decimal(19,4);comment:数量"`
+	UnitPrice float64        `gorm:"type:decimal(19,4);comment:单价"`
+	BaseType  int            `gorm:"type:int;comment:基础单据类型"`
+	BaseEntry uint           `gorm:"type:bigint;comment:基础单据内部ID"`
+	BaseLine  uint           `gorm:"type:bigint;comment:基础单据行号"`
+	ExtData   datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
 // SysSalesOrder 销售订单
 type SysSalesOrder struct {
 	gorm.Model
-	DocNo       string              `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
-	BpID        string              `gorm:"type:varchar(64);index;comment:业务伙伴ID"`
-	TotalAmount float64             `gorm:"type:decimal(19,4);comment:总金额"`
-	Lines       []SysSalesOrderLine `gorm:"foreignKey:DocID;comment:订单行"`
-	ExtData     datatypes.JSON      `gorm:"type:json;comment:扩展数据"`
+	DocNo            string              `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
+	SoldToBpID       string              `gorm:"type:varchar(64);index;comment:售达方ID"`
+	ShipToBpID       string              `gorm:"type:varchar(64);index;comment:送达方ID"`
+	BillToBpID       string              `gorm:"type:varchar(64);index;comment:收票方ID"`
+	PayerBpID        string              `gorm:"type:varchar(64);index;comment:付款方ID"`
+	RelatedPartyCode string              `gorm:"type:varchar(64);comment:关联方编码"`
+	EndCustomerCode  string              `gorm:"type:varchar(64);comment:最终客户编码"`
+	TotalAmount      float64             `gorm:"type:decimal(19,4);comment:总金额"`
+	Lines            []SysSalesOrderLine `gorm:"foreignKey:DocID;comment:订单行"`
+	ExtData          datatypes.JSON      `gorm:"type:json;comment:扩展数据"`
 }
 
 // SysSalesOrderLine 销售订单行
@@ -75,41 +101,104 @@ type SysSalesOrderLine struct {
 	ItemCode  string         `gorm:"type:varchar(64);index;comment:物料编码"`
 	Qty       float64        `gorm:"type:decimal(19,4);comment:数量"`
 	UnitPrice float64        `gorm:"type:decimal(19,4);comment:单价"`
+	BaseType  int            `gorm:"type:int;comment:基础单据类型"`
+	BaseEntry uint           `gorm:"type:bigint;comment:基础单据内部ID"`
+	BaseLine  uint           `gorm:"type:bigint;comment:基础单据行号"`
 	ExtData   datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
 // SysDelivery 交货单
 type SysDelivery struct {
 	gorm.Model
-	DeliveryNo string         `gorm:"type:varchar(64);uniqueIndex;comment:交货单号"`
-	OrderID    string         `gorm:"type:varchar(64);index;comment:关联订单ID"`
-	BpID       string         `gorm:"type:varchar(64);index;comment:业务伙伴ID"`
-	ExtData    datatypes.JSON `gorm:"type:json;comment:扩展数据"`
+	DeliveryNo       string            `gorm:"type:varchar(64);uniqueIndex;comment:交货单号"`
+	OrderID          string            `gorm:"type:varchar(64);index;comment:关联订单ID"`
+	SoldToBpID       string            `gorm:"type:varchar(64);index;comment:售达方ID"`
+	ShipToBpID       string            `gorm:"type:varchar(64);index;comment:送达方ID"`
+	BillToBpID       string            `gorm:"type:varchar(64);index;comment:收票方ID"`
+	PayerBpID        string            `gorm:"type:varchar(64);index;comment:付款方ID"`
+	RelatedPartyCode string            `gorm:"type:varchar(64);comment:关联方编码"`
+	EndCustomerCode  string            `gorm:"type:varchar(64);comment:最终客户编码"`
+	Lines            []SysDeliveryLine `gorm:"foreignKey:DocID;comment:交货单行"`
+	ExtData          datatypes.JSON    `gorm:"type:json;comment:扩展数据"`
+}
+
+// SysDeliveryLine 交货单行
+type SysDeliveryLine struct {
+	gorm.Model
+	DocID     uint           `gorm:"type:bigint;index;comment:交货单ID"`
+	ItemCode  string         `gorm:"type:varchar(64);index;comment:物料编码"`
+	Qty       float64        `gorm:"type:decimal(19,4);comment:数量"`
+	BaseType  int            `gorm:"type:int;comment:基础单据类型"`
+	BaseEntry uint           `gorm:"type:bigint;comment:基础单据内部ID"`
+	BaseLine  uint           `gorm:"type:bigint;comment:基础单据行号"`
+	ExtData   datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
 // SysSalesReturnRequest 销售退货请求
 type SysSalesReturnRequest struct {
 	gorm.Model
-	DocNo   string         `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
-	OrderID string         `gorm:"type:varchar(64);index;comment:关联订单ID"`
-	ExtData datatypes.JSON `gorm:"type:json;comment:扩展数据"`
+	DocNo            string                      `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
+	OrderID          string                      `gorm:"type:varchar(64);index;comment:关联订单ID"`
+	RelatedPartyCode string                      `gorm:"type:varchar(64);comment:关联方编码"`
+	EndCustomerCode  string                      `gorm:"type:varchar(64);comment:最终客户编码"`
+	Lines            []SysSalesReturnRequestLine `gorm:"foreignKey:DocID;comment:销售退货请求行"`
+	ExtData          datatypes.JSON              `gorm:"type:json;comment:扩展数据"`
+}
+
+// SysSalesReturnRequestLine 销售退货请求行
+type SysSalesReturnRequestLine struct {
+	gorm.Model
+	DocID     uint           `gorm:"type:bigint;index;comment:销售退货请求ID"`
+	ItemCode  string         `gorm:"type:varchar(64);index;comment:物料编码"`
+	Qty       float64        `gorm:"type:decimal(19,4);comment:数量"`
+	BaseType  int            `gorm:"type:int;comment:基础单据类型"`
+	BaseEntry uint           `gorm:"type:bigint;comment:基础单据内部ID"`
+	BaseLine  uint           `gorm:"type:bigint;comment:基础单据行号"`
+	ExtData   datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
 // SysSalesReturn 销售退货单
 type SysSalesReturn struct {
 	gorm.Model
-	DocNo   string         `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
-	OrderID string         `gorm:"type:varchar(64);index;comment:关联订单ID"`
-	ExtData datatypes.JSON `gorm:"type:json;comment:扩展数据"`
+	DocNo            string               `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
+	OrderID          string               `gorm:"type:varchar(64);index;comment:关联订单ID"`
+	RelatedPartyCode string               `gorm:"type:varchar(64);comment:关联方编码"`
+	EndCustomerCode  string               `gorm:"type:varchar(64);comment:最终客户编码"`
+	Lines            []SysSalesReturnLine `gorm:"foreignKey:DocID;comment:销售退货单行"`
+	ExtData          datatypes.JSON       `gorm:"type:json;comment:扩展数据"`
+}
+
+// SysSalesReturnLine 销售退货单行
+type SysSalesReturnLine struct {
+	gorm.Model
+	DocID     uint           `gorm:"type:bigint;index;comment:销售退货单ID"`
+	ItemCode  string         `gorm:"type:varchar(64);index;comment:物料编码"`
+	Qty       float64        `gorm:"type:decimal(19,4);comment:数量"`
+	BaseType  int            `gorm:"type:int;comment:基础单据类型"`
+	BaseEntry uint           `gorm:"type:bigint;comment:基础单据内部ID"`
+	BaseLine  uint           `gorm:"type:bigint;comment:基础单据行号"`
+	ExtData   datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
 // SysPurchaseRequisition 采购申请
 type SysPurchaseRequisition struct {
 	gorm.Model
-	ReqNo    string         `gorm:"type:varchar(64);uniqueIndex;comment:申请编号"`
-	ItemCode string         `gorm:"type:varchar(64);index;comment:物料编码"`
-	ReqQty   float64        `gorm:"type:decimal(19,4);comment:申请数量"`
-	ExtData  datatypes.JSON `gorm:"type:json;comment:扩展数据"`
+	ReqNo            string                       `gorm:"type:varchar(64);uniqueIndex;comment:申请编号"`
+	RelatedPartyCode string                       `gorm:"type:varchar(64);comment:关联方编码"`
+	Lines            []SysPurchaseRequisitionLine `gorm:"foreignKey:DocID;comment:申请行"`
+	ExtData          datatypes.JSON               `gorm:"type:json;comment:扩展数据"`
+}
+
+// SysPurchaseRequisitionLine 采购申请行
+type SysPurchaseRequisitionLine struct {
+	gorm.Model
+	DocID     uint           `gorm:"type:bigint;index;comment:采购申请ID"`
+	ItemCode  string         `gorm:"type:varchar(64);index;comment:物料编码"`
+	Qty       float64        `gorm:"type:decimal(19,4);comment:数量"`
+	BaseType  int            `gorm:"type:int;comment:基础单据类型"`
+	BaseEntry uint           `gorm:"type:bigint;comment:基础单据内部ID"`
+	BaseLine  uint           `gorm:"type:bigint;comment:基础单据行号"`
+	ExtData   datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
 // SysPurchaseOrderLine 采购订单行
@@ -119,6 +208,9 @@ type SysPurchaseOrderLine struct {
 	ItemCode  string         `gorm:"type:varchar(64);index;comment:物料编码"`
 	Qty       float64        `gorm:"type:decimal(19,4);comment:数量"`
 	UnitPrice float64        `gorm:"type:decimal(19,4);comment:单价"`
+	BaseType  int            `gorm:"type:int;comment:基础单据类型"`
+	BaseEntry uint           `gorm:"type:bigint;comment:基础单据内部ID"`
+	BaseLine  uint           `gorm:"type:bigint;comment:基础单据行号"`
 	ExtData   datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
@@ -136,17 +228,45 @@ type SysLandedCost struct {
 // SysPurchaseReturnRequest 采购退货请求
 type SysPurchaseReturnRequest struct {
 	gorm.Model
-	DocNo   string         `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
-	OrderID string         `gorm:"type:varchar(64);index;comment:关联订单ID"`
-	ExtData datatypes.JSON `gorm:"type:json;comment:扩展数据"`
+	DocNo            string                         `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
+	OrderID          string                         `gorm:"type:varchar(64);index;comment:关联订单ID"`
+	RelatedPartyCode string                         `gorm:"type:varchar(64);comment:关联方编码"`
+	Lines            []SysPurchaseReturnRequestLine `gorm:"foreignKey:DocID;comment:采购退货请求行"`
+	ExtData          datatypes.JSON                 `gorm:"type:json;comment:扩展数据"`
+}
+
+// SysPurchaseReturnRequestLine 采购退货请求行
+type SysPurchaseReturnRequestLine struct {
+	gorm.Model
+	DocID     uint           `gorm:"type:bigint;index;comment:采购退货请求ID"`
+	ItemCode  string         `gorm:"type:varchar(64);index;comment:物料编码"`
+	Qty       float64        `gorm:"type:decimal(19,4);comment:数量"`
+	BaseType  int            `gorm:"type:int;comment:基础单据类型"`
+	BaseEntry uint           `gorm:"type:bigint;comment:基础单据内部ID"`
+	BaseLine  uint           `gorm:"type:bigint;comment:基础单据行号"`
+	ExtData   datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
 // SysPurchaseReturn 采购退货单
 type SysPurchaseReturn struct {
 	gorm.Model
-	DocNo   string         `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
-	OrderID string         `gorm:"type:varchar(64);index;comment:关联订单ID"`
-	ExtData datatypes.JSON `gorm:"type:json;comment:扩展数据"`
+	DocNo            string                  `gorm:"type:varchar(64);uniqueIndex;comment:单据编号"`
+	OrderID          string                  `gorm:"type:varchar(64);index;comment:关联订单ID"`
+	RelatedPartyCode string                  `gorm:"type:varchar(64);comment:关联方编码"`
+	Lines            []SysPurchaseReturnLine `gorm:"foreignKey:DocID;comment:采购退货单行"`
+	ExtData          datatypes.JSON          `gorm:"type:json;comment:扩展数据"`
+}
+
+// SysPurchaseReturnLine 采购退货单行
+type SysPurchaseReturnLine struct {
+	gorm.Model
+	DocID     uint           `gorm:"type:bigint;index;comment:采购退货单ID"`
+	ItemCode  string         `gorm:"type:varchar(64);index;comment:物料编码"`
+	Qty       float64        `gorm:"type:decimal(19,4);comment:数量"`
+	BaseType  int            `gorm:"type:int;comment:基础单据类型"`
+	BaseEntry uint           `gorm:"type:bigint;comment:基础单据内部ID"`
+	BaseLine  uint           `gorm:"type:bigint;comment:基础单据行号"`
+	ExtData   datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
 // SysGoodsMovement 货物移动 (收发货转储)

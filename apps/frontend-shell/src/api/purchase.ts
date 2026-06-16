@@ -4,7 +4,7 @@ export interface PurchaseOrderRequest {
   orderNo: string;
   title: string;
   amount: number;
-  extData?: Record<string, any>;
+  extData?: Record<string, unknown>;
 }
 
 export const submitPurchaseOrder = async (data: PurchaseOrderRequest) => {

@@ -13,9 +13,10 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="logo-dot"></div>
-        <h2>OpenERP</h2>
+        <div className="sidebar-logo">
+        <Package className="logo-icon" />
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <h2>{t('OpenERP' as any)}</h2>
       </div>
       <nav className="sidebar-nav">
         <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} end>

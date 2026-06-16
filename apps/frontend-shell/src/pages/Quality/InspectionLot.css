@@ -1,0 +1,72 @@
+.inspection-lot-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-lg);
+  gap: var(--spacing-lg);
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.header-title h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--font-xs);
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-badge.pending {
+  background-color: #fffbeb;
+  color: var(--status-warning);
+  border: 1px solid #fde68a;
+}
+
+.status-badge.passed {
+  background-color: #ecfdf5;
+  color: var(--status-normal);
+  border: 1px solid #a7f3d0;
+}
+
+.status-badge.failed {
+  background-color: #fef2f2;
+  color: var(--status-critical);
+  border: 1px solid #fecaca;
+}
+
+.btn-small {
+  padding: 4px 8px;
+  font-size: var(--font-xs);
+}
+
+.result-pass {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--status-normal);
+  font-weight: 500;
+}
+
+.result-fail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--status-critical);
+  font-weight: 500;
+}

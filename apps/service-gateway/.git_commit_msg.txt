@@ -1,0 +1,12 @@
+feat(service-gateway): 实施四方交易(Partner Functions)核心架构重构
+
+【业务视角】
+1. 实现了四方交易模型的落地，将原有的单一“业务伙伴(BpID)”剥离为：售达方(SoldToBpID)、送达方(ShipToBpID)、收票方(BillToBpID)和付款方(PayerBpID)。
+2. 支持了更复杂的跨国贸易、集团内部代采代销以及第三方物流与支付场景，满足企业级ERP对高复杂度供应链的管控要求。
+3. 财务模块(Auto Post Engine)现已支持将应收/应付账款精准挂账至“付款方”或“收票方”，而非笼统的业务单据抬头方，降低了财务核销的错配风险。
+
+【技术视角】
+1. 重构了 `stage3.go` (SysSalesOrder, SysDelivery等) 及 `purchase_order.go` (SysPurchaseOrder) 的 GORM 数据模型定义，使用 4 个新的 string 类型字段替换了旧有的 BpID。
+2. 同步更新了 `stage2.go` 中的 AR/AP 发票模型，并对财务总账行 `SysJournalEntryLine` 追加了 `PayerBpID` 和 `BillToBpID` 字段以支持财务子系统。
+3. 更新了 `api/v1/finance.go` 中的 `AutoPostRequest` 自动过账请求结构体，并在生成贷方/借方分录行时自动绑定对账的伙伴ID。
+4. 全局采用 Gin 的 `ShouldBindJSON` 隐式绑定特性，无缝将前后端接口对接至新模型，并确保 `go build` 编译完美通过。

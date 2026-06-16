@@ -12,7 +12,9 @@ type SysMaterial struct {
 	MaterialName string         `gorm:"type:varchar(255);not null;comment:物料名称"`
 	Category     string         `gorm:"type:varchar(64);index;comment:物料分类(如:原材料、半成品、成品)"`
 	Unit         string         `gorm:"type:varchar(32);comment:基本计量单位"`
-	IsActive     bool           `gorm:"default:true;comment:是否启用"`
+	IsActive          bool           `gorm:"default:true;comment:是否启用"`
+	Stock             float64        `gorm:"type:decimal(18,4);default:0;comment:当前库存量"`
+	MovingAverageCost float64        `gorm:"type:decimal(18,4);default:0;comment:移动平均成本"`
 
 	// 面向未来的设计：无限扩展的自定义字段 (JSONB)
 	ExtData      datatypes.JSON `gorm:"type:json;comment:动态扩展属性"`

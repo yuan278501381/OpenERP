@@ -31,6 +31,8 @@ type SysJournalEntryLine struct {
 	gorm.Model
 	EntryID      uint           `gorm:"comment:分录头ID"`
 	AccountCode  string         `gorm:"type:varchar(64);comment:科目代码"`
+	PayerBpID    string         `gorm:"type:varchar(64);index;comment:付款方ID"`
+	BillToBpID   string         `gorm:"type:varchar(64);index;comment:收票方ID"`
 	DebitAmount  float64        `gorm:"type:decimal(15,2);comment:借方金额"`
 	CreditAmount float64        `gorm:"type:decimal(15,2);comment:贷方金额"`
 	CostCenter   string         `gorm:"type:varchar(64);comment:成本中心"`
@@ -61,7 +63,10 @@ type SysBudget struct {
 type SysARInvoice struct {
 	gorm.Model
 	InvoiceNo   string         `gorm:"type:varchar(64);uniqueIndex;comment:发票号"`
-	BpID        string         `gorm:"type:varchar(64);comment:业务伙伴ID"`
+	SoldToBpID  string         `gorm:"type:varchar(64);index;comment:售达方ID"`
+	ShipToBpID  string         `gorm:"type:varchar(64);index;comment:送达方ID"`
+	BillToBpID  string         `gorm:"type:varchar(64);index;comment:收票方ID"`
+	PayerBpID   string         `gorm:"type:varchar(64);index;comment:付款方ID"`
 	TotalAmount float64        `gorm:"type:decimal(15,2);comment:总金额"`
 	TaxAmount   float64        `gorm:"type:decimal(15,2);comment:税额"`
 	Status      string         `gorm:"type:varchar(32);comment:状态"`
@@ -72,7 +77,10 @@ type SysARInvoice struct {
 type SysAPInvoice struct {
 	gorm.Model
 	InvoiceNo   string         `gorm:"type:varchar(64);uniqueIndex;comment:发票号"`
-	BpID        string         `gorm:"type:varchar(64);comment:业务伙伴ID"`
+	SoldToBpID  string         `gorm:"type:varchar(64);index;comment:售达方ID"`
+	ShipToBpID  string         `gorm:"type:varchar(64);index;comment:送达方ID"`
+	BillToBpID  string         `gorm:"type:varchar(64);index;comment:收票方ID"`
+	PayerBpID   string         `gorm:"type:varchar(64);index;comment:付款方ID"`
 	TotalAmount float64        `gorm:"type:decimal(15,2);comment:总金额"`
 	TaxAmount   float64        `gorm:"type:decimal(15,2);comment:税额"`
 	Status      string         `gorm:"type:varchar(32);comment:状态"`

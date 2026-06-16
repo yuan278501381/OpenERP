@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Filter, Download, MoreHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMaterials } from '../../hooks/useMaterials';
@@ -6,6 +7,7 @@ import './MaterialDashboard.css';
 
 export const MaterialDashboard: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { materials, loading, error } = useMaterials();
 
   return (
@@ -24,7 +26,7 @@ export const MaterialDashboard: React.FC = () => {
             <Download size={14} />
             {t('Export')}
           </button>
-          <button className="btn btn-primary">
+          <button type="button" onClick={() => navigate('/master-data/document')} className="btn btn-primary">
             <Plus size={14} />
             {t('New Material')}
           </button>

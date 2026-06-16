@@ -89,16 +89,23 @@ func main() {
 		&models.SysBusinessPartner{},
 		&models.SysPricingCondition{},
 		&models.SysSalesQuotation{},
+		&models.SysSalesQuotationLine{},
 		&models.SysSalesOrder{},
 		&models.SysSalesOrderLine{},
 		&models.SysDelivery{},
+		&models.SysDeliveryLine{},
 		&models.SysSalesReturnRequest{},
+		&models.SysSalesReturnRequestLine{},
 		&models.SysSalesReturn{},
+		&models.SysSalesReturnLine{},
 		&models.SysPurchaseRequisition{},
+		&models.SysPurchaseRequisitionLine{},
 		&models.SysPurchaseOrderLine{},
 		&models.SysLandedCost{},
 		&models.SysPurchaseReturnRequest{},
+		&models.SysPurchaseReturnRequestLine{},
 		&models.SysPurchaseReturn{},
+		&models.SysPurchaseReturnLine{},
 		&models.SysGoodsMovement{},
 		&models.SysInventoryTransferRequest{},
 		&models.SysInventoryTransfer{},
@@ -283,11 +290,22 @@ func main() {
 	r.PUT("/openerp/v1/sales-orders/:id", v1.UpdateSalesOrder)
 	r.DELETE("/openerp/v1/sales-orders/:id", v1.DeleteSalesOrder)
 
+	// Inventory & Goods Movement API
+	r.POST("/openerp/v1/goods-movement", v1.CreateGoodsMovement)
+
 	// Production Orders API
 	r.POST("/openerp/v1/production-orders", v1.CreateProductionOrder)
 	r.GET("/openerp/v1/production-orders", v1.GetProductionOrders)
 	r.PUT("/openerp/v1/production-orders/:id", v1.UpdateProductionOrder)
 	r.DELETE("/openerp/v1/production-orders/:id", v1.DeleteProductionOrder)
+	r.POST("/openerp/v1/production-orders/:id/report-completion", v1.ReportCompletion)
+
+	// MRP API
+	r.POST("/openerp/v1/mrp/run", v1.RunMRP)
+
+	// Finance API (自动过账引擎 & 日记账)
+	r.POST("/openerp/v1/finance/auto-post", v1.AutoPostJournalEntry)
+	r.GET("/openerp/v1/finance/journal-entries", v1.GetJournalEntries)
 
 	bgLog.Info("API Gateway 成功启动，监听在 :8080 端口")
 	if err := r.Run(":8080"); err != nil {

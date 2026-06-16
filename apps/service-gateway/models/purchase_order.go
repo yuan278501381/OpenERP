@@ -13,10 +13,14 @@ type SysPurchaseOrder struct {
 	Title       string                 `gorm:"type:varchar(255);comment:申请标题"`
 	ApplicantID string                 `gorm:"type:varchar(64);comment:申请人ID"`
 	DeptID      string                 `gorm:"type:varchar(64);comment:申请部门ID"`
-	BpID        string                 `gorm:"type:varchar(64);index;comment:业务伙伴ID"`
-	Amount      float64                `gorm:"type:decimal(10,2);comment:预估总金额"`
-	Status      string                 `gorm:"type:varchar(32);default:'DRAFT';comment:单据状态"`
-	Lines       []SysPurchaseOrderLine `gorm:"foreignKey:DocID;comment:采购订单行"`
+	SoldToBpID  string                 `gorm:"type:varchar(64);index;comment:售达方ID"`
+	ShipToBpID  string                 `gorm:"type:varchar(64);index;comment:送达方ID"`
+	BillToBpID  string                 `gorm:"type:varchar(64);index;comment:收票方ID"`
+	PayerBpID   string                 `gorm:"type:varchar(64);index;comment:付款方ID"`
+	Amount           float64                `gorm:"type:decimal(10,2);comment:预估总金额"`
+	Status           string                 `gorm:"type:varchar(32);default:'DRAFT';comment:单据状态"`
+	RelatedPartyCode string                 `gorm:"type:varchar(64);comment:关联方编码"`
+	Lines            []SysPurchaseOrderLine `gorm:"foreignKey:DocID;comment:采购订单行"`
 	
 	// 面向未来的设计：无限扩展的自定义字段 (动态表单机制)
 	// 在 PostgreSQL 中将映射为原生 JSONB，支持高效索引与多维数据查询。

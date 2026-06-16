@@ -21,9 +21,9 @@ export const useMaterials = () => {
           setMaterials(response.data);
           logger.info('Successfully fetched materials from API', { count: response.data.length });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Fallback to mock data if endpoint is not available yet
-        logger.warn('Failed to fetch from /openerp/v1/materials, using mock data.', { error: err.message });
+        logger.warn('Failed to fetch from /openerp/v1/materials, using mock data.', { error: err instanceof Error ? err.message : String(err) });
         
         // Mock data to ensure the UI can be tested
         const mockData: Material[] = [
@@ -35,7 +35,7 @@ export const useMaterials = () => {
         ];
         setMaterials(mockData);
         // Optional: you can set error state if you want to show error UI
-        setError('Failed to connect to backend api, using mock data.');
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }

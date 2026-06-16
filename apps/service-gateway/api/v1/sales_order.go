@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"net/http"
 	"openerp/apps/service-gateway/db"
 	"openerp/apps/service-gateway/models"
@@ -27,9 +28,29 @@ func CreateSalesOrder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "参数解析失败"})
 		return
 	}
-	if err := db.DB.Create(&order).Error; err != nil {
+
+	// 开启数据库事务，遵循高内聚原则
+	err := db.DB.Transaction(func(tx *gorm.DB) error {
+		// 模拟 ATP (Available To Promise) Check
+		for _, line := range order.Lines {
+			var material models.SysMaterial
+			if err := tx.Where("material_code = ?", line.ItemCode).First(&material).Error; err != nil {
+				return fmt.Errorf("查询物料 %s 失败: %w", line.ItemCode, err)
+			}
+			if material.Stock < line.Qty {
+				return fmt.Errorf("物料 %s 库存不足，当前库存: %.2f，需求: %.2f", material.MaterialCode, material.Stock, line.Qty)
+			}
+		}
+
+		if err := tx.Create(&order).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
 		log.Error("创建销售订单失败", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "创建失败"})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "success", "data": order})
