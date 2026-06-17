@@ -48,6 +48,7 @@ func TriggerPurchaseApprovalWorkflow(db *gorm.DB, po models.SysPurchaseOrder) er
 		SlaStatus: "Normal",
 		TenantID:  "TENANT-001",
 		UserID:    "USER-1024", // 模拟引擎将任务指派给财务总监的员工账号
+		ExtraData: "{}",
 	}
 
 	// 模拟流控引擎的网关条件判断机制 (Amount > 100000 走特批)

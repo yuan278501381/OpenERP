@@ -12,8 +12,8 @@ type SysBatch struct {
 	gorm.Model
 	BatchNo  string         `gorm:"type:varchar(64);index;comment:批次号"`
 	ItemCode string         `gorm:"type:varchar(64);index;comment:物料编码"`
-	MfgDate  time.Time      `gorm:"type:datetime;comment:生产日期"`
-	ExpDate  time.Time      `gorm:"type:datetime;comment:过期日期"`
+	MfgDate  time.Time      `gorm:"comment:生产日期"`
+	ExpDate  time.Time      `gorm:"comment:过期日期"`
 	ExtData  datatypes.JSON `gorm:"type:json;comment:扩展数据"`
 }
 
@@ -44,8 +44,8 @@ type SysPricingCondition struct {
 	ConditionType string         `gorm:"type:varchar(64);index;comment:条件类型"`
 	ItemCode      string         `gorm:"type:varchar(64);index;comment:物料编码"`
 	BpCode        string         `gorm:"type:varchar(64);index;comment:业务伙伴编码"`
-	ValidFrom     time.Time      `gorm:"type:datetime;comment:生效日期"`
-	ValidTo       time.Time      `gorm:"type:datetime;comment:失效日期"`
+	ValidFrom     time.Time      `gorm:"comment:生效日期"`
+	ValidTo       time.Time      `gorm:"comment:失效日期"`
 	Price         float64        `gorm:"type:decimal(19,4);comment:价格"`
 	Discount      float64        `gorm:"type:decimal(10,4);comment:折扣"`
 	ExtData       datatypes.JSON `gorm:"type:json;comment:扩展数据"`

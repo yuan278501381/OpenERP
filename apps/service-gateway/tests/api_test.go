@@ -8,12 +8,12 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
+	v1 "openerp/apps/service-gateway/api/v1"
 	"openerp/apps/service-gateway/db"
 	"openerp/apps/service-gateway/models"
-	v1 "openerp/apps/service-gateway/api/v1"
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
 )
 
 func setupRouter() *gin.Engine {
@@ -26,9 +26,19 @@ func setupRouter() *gin.Engine {
 
 	// Auto-migrate models
 	db.DB.AutoMigrate(
+		&models.SysTask{},
 		&models.SysOrganization{},
+		&models.SysAccountDetermination{},
 		&models.SysGLAccount{},
+		&models.SysJournalEntry{},
+		&models.SysJournalEntryLine{},
 		&models.SysExpenseClaim{},
+		&models.SysMaterial{},
+		&models.SysGoodsMovement{},
+		&models.SysPurchaseOrder{},
+		&models.SysPurchaseOrderLine{},
+		&models.SysPurchaseReceipt{},
+		&models.SysPurchaseReceiptLine{},
 		&models.SysBusinessPartner{},
 		&models.SysSalesOrder{},
 		&models.SysSalesOrderLine{},
@@ -56,6 +66,12 @@ func setupRouter() *gin.Engine {
 	r.PUT("/openerp/v1/expense-claims/:id", v1.UpdateExpenseClaim)
 	r.DELETE("/openerp/v1/expense-claims/:id", v1.DeleteExpenseClaim)
 
+	// Purchasing
+	r.POST("/openerp/v1/purchase-orders", v1.CreatePurchaseOrder)
+	r.GET("/openerp/v1/purchase-orders", v1.GetPurchaseOrders)
+	r.POST("/openerp/v1/purchase-receipts", v1.CreatePurchaseReceipt)
+	r.GET("/openerp/v1/purchase-receipts", v1.GetPurchaseReceipts)
+
 	// Business Partners
 	r.POST("/openerp/v1/business-partners", v1.CreateBusinessPartner)
 	r.GET("/openerp/v1/business-partners", v1.GetBusinessPartners)
@@ -67,6 +83,10 @@ func setupRouter() *gin.Engine {
 	r.GET("/openerp/v1/sales-orders", v1.GetSalesOrders)
 	r.PUT("/openerp/v1/sales-orders/:id", v1.UpdateSalesOrder)
 	r.DELETE("/openerp/v1/sales-orders/:id", v1.DeleteSalesOrder)
+
+	// Goods Movement
+	r.POST("/openerp/v1/goods-movement", v1.CreateGoodsMovement)
+	r.GET("/openerp/v1/goods-movement", v1.GetGoodsMovements)
 
 	// Production Orders
 	r.POST("/openerp/v1/production-orders", v1.CreateProductionOrder)
@@ -157,11 +177,11 @@ func TestExpenseClaimCRUD(t *testing.T) {
 	r := setupRouter()
 
 	claim := models.SysExpenseClaim{
-		ClaimNo: "EXP-1001",
+		ClaimNo:    "EXP-1001",
 		EmployeeID: "EMP001",
-		Amount: 1500.50,
-		Reason: "Travel",
-		Status: "Draft",
+		Amount:     1500.50,
+		Reason:     "Travel",
+		Status:     "Draft",
 	}
 	body, _ := json.Marshal(claim)
 	req, _ := http.NewRequest("POST", "/openerp/v1/expense-claims", bytes.NewBuffer(body))
@@ -211,8 +231,11 @@ func TestSalesOrderCRUD(t *testing.T) {
 	r := setupRouter()
 
 	order := models.SysSalesOrder{
-		DocNo: "SO001",
-		BpID: "BP001",
+		DocNo:       "SO001",
+		SoldToBpID:  "BP001",
+		ShipToBpID:  "BP001",
+		BillToBpID:  "BP001",
+		PayerBpID:   "BP001",
 		TotalAmount: 100.0,
 	}
 	body, _ := json.Marshal(order)
@@ -233,12 +256,191 @@ func TestSalesOrderCRUD(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestGoodsMovementReceiptUpdatesStockAndPostsJournalEntry(t *testing.T) {
+	r := setupRouter()
+
+	material := models.SysMaterial{
+		MaterialCode:      "MAT-RECEIPT",
+		MaterialName:      "Receipt Material",
+		Category:          "RAW",
+		Unit:              "EA",
+		Stock:             10,
+		MovingAverageCost: 5,
+	}
+	assert.NoError(t, db.DB.Create(&material).Error)
+	assert.NoError(t, db.DB.Create(&models.SysAccountDetermination{
+		TransactionType: v1.PostingEventGoodsReceipt,
+		ItemCategory:    "RAW",
+		DebitAccount:    "1405",
+		CreditAccount:   "2202",
+	}).Error)
+
+	body, _ := json.Marshal(map[string]interface{}{
+		"mvmtNo":   "GM-RECEIPT-001",
+		"mvmtType": "Receipt",
+		"itemCode": "MAT-RECEIPT",
+		"qty":      5,
+		"unitCost": 8,
+	})
+	req, _ := http.NewRequest("POST", "/openerp/v1/goods-movement", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	req, _ = http.NewRequest("GET", "/openerp/v1/goods-movement", nil)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var updated models.SysMaterial
+	assert.NoError(t, db.DB.Where("material_code = ?", "MAT-RECEIPT").First(&updated).Error)
+	assert.Equal(t, 15.0, updated.Stock)
+	assert.InDelta(t, 6.0, updated.MovingAverageCost, 0.0001)
+
+	var entry models.SysJournalEntry
+	assert.NoError(t, db.DB.Preload("Lines").Where("total_amount = ?", 40).First(&entry).Error)
+	assert.Equal(t, 40.0, entry.TotalAmount)
+	assert.Len(t, entry.Lines, 2)
+	assertJournalLine(t, entry.Lines, "1405", 40, 0)
+	assertJournalLine(t, entry.Lines, "2202", 0, 40)
+}
+
+func TestGoodsMovementIssueUpdatesStockAndPostsJournalEntry(t *testing.T) {
+	r := setupRouter()
+
+	material := models.SysMaterial{
+		MaterialCode:      "MAT-ISSUE",
+		MaterialName:      "Issue Material",
+		Category:          "RAW",
+		Unit:              "EA",
+		Stock:             10,
+		MovingAverageCost: 6,
+	}
+	assert.NoError(t, db.DB.Create(&material).Error)
+	assert.NoError(t, db.DB.Create(&models.SysAccountDetermination{
+		TransactionType: v1.PostingEventGoodsIssue,
+		ItemCategory:    "RAW",
+		DebitAccount:    "6401",
+		CreditAccount:   "1405",
+	}).Error)
+
+	body, _ := json.Marshal(map[string]interface{}{
+		"mvmtNo":   "GM-ISSUE-001",
+		"mvmtType": "Issue",
+		"itemCode": "MAT-ISSUE",
+		"qty":      3,
+	})
+	req, _ := http.NewRequest("POST", "/openerp/v1/goods-movement", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var updated models.SysMaterial
+	assert.NoError(t, db.DB.Where("material_code = ?", "MAT-ISSUE").First(&updated).Error)
+	assert.Equal(t, 7.0, updated.Stock)
+	assert.Equal(t, 6.0, updated.MovingAverageCost)
+
+	var entry models.SysJournalEntry
+	assert.NoError(t, db.DB.Preload("Lines").Where("total_amount = ?", 18).First(&entry).Error)
+	assert.Equal(t, 18.0, entry.TotalAmount)
+	assert.Len(t, entry.Lines, 2)
+	assertJournalLine(t, entry.Lines, "6401", 18, 0)
+	assertJournalLine(t, entry.Lines, "1405", 0, 18)
+}
+
+func TestPurchaseOrderReceiptPostsInventoryAndJournalWithTraceability(t *testing.T) {
+	r := setupRouter()
+
+	material := models.SysMaterial{
+		MaterialCode:      "MAT-GRPO",
+		MaterialName:      "GRPO Material",
+		Category:          "RAW",
+		Unit:              "EA",
+		Stock:             10,
+		MovingAverageCost: 5,
+	}
+	assert.NoError(t, db.DB.Create(&material).Error)
+	assert.NoError(t, db.DB.Create(&models.SysAccountDetermination{
+		TransactionType: v1.PostingEventGoodsReceipt,
+		ItemCategory:    "RAW",
+		DebitAccount:    "1405",
+		CreditAccount:   "2202",
+	}).Error)
+
+	orderBody, _ := json.Marshal(map[string]interface{}{
+		"docNo":      "PO-GRPO-001",
+		"title":      "GRPO integration test",
+		"soldToBpId": "VEND-001",
+		"shipToBpId": "PLANT-001",
+		"billToBpId": "VEND-INV",
+		"payerBpId":  "VEND-PAY",
+		"lines": []map[string]interface{}{
+			{
+				"itemCode":  "MAT-GRPO",
+				"qty":       4,
+				"unitPrice": 8,
+			},
+		},
+	})
+	req, _ := http.NewRequest("POST", "/openerp/v1/purchase-orders", bytes.NewBuffer(orderBody))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var orderResponse struct {
+		Data models.SysPurchaseOrder `json:"data"`
+	}
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &orderResponse))
+	assert.NotZero(t, orderResponse.Data.ID)
+
+	receiptBody, _ := json.Marshal(map[string]interface{}{
+		"docNo":           "GRPO-001",
+		"purchaseOrderId": orderResponse.Data.ID,
+		"costCenter":      "WH01",
+		"lines": []map[string]interface{}{
+			{
+				"baseLine": 0,
+				"qty":      4,
+			},
+		},
+	})
+	req, _ = http.NewRequest("POST", "/openerp/v1/purchase-receipts", bytes.NewBuffer(receiptBody))
+	req.Header.Set("Content-Type", "application/json")
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var updated models.SysMaterial
+	assert.NoError(t, db.DB.Where("material_code = ?", "MAT-GRPO").First(&updated).Error)
+	assert.Equal(t, 14.0, updated.Stock)
+	assert.InDelta(t, 5.8571, updated.MovingAverageCost, 0.0001)
+
+	var receipt models.SysPurchaseReceipt
+	assert.NoError(t, db.DB.Preload("Lines").Where("doc_no = ?", "GRPO-001").First(&receipt).Error)
+	assert.Equal(t, orderResponse.Data.ID, receipt.PurchaseOrderID)
+	assert.Equal(t, "VEND-PAY", receipt.PayerBpID)
+	assert.Equal(t, 32.0, receipt.TotalAmount)
+	assert.Len(t, receipt.Lines, 1)
+	assert.Equal(t, models.DocumentTypePurchaseOrder, receipt.Lines[0].BaseType)
+	assert.Equal(t, orderResponse.Data.ID, receipt.Lines[0].BaseEntry)
+	assert.Equal(t, uint(0), receipt.Lines[0].BaseLine)
+
+	var entry models.SysJournalEntry
+	assert.NoError(t, db.DB.Preload("Lines").Where("total_amount = ?", 32).First(&entry).Error)
+	assertJournalLine(t, entry.Lines, "1405", 32, 0)
+	assertJournalLine(t, entry.Lines, "2202", 0, 32)
+	assert.Equal(t, "VEND-PAY", entry.Lines[0].PayerBpID)
+}
+
 func TestProductionOrderCRUD(t *testing.T) {
 	r := setupRouter()
 
 	order := models.SysProductionOrder{
-		OrderNo: "PO001",
-		ItemCode: "ITEM001",
+		OrderNo:    "PO001",
+		ItemCode:   "ITEM001",
 		PlannedQty: 10,
 	}
 	body, _ := json.Marshal(order)
@@ -259,3 +461,14 @@ func TestProductionOrderCRUD(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func assertJournalLine(t *testing.T, lines []models.SysJournalEntryLine, accountCode string, debit float64, credit float64) {
+	t.Helper()
+	for _, line := range lines {
+		if line.AccountCode == accountCode {
+			assert.Equal(t, debit, line.DebitAmount)
+			assert.Equal(t, credit, line.CreditAmount)
+			return
+		}
+	}
+	t.Fatalf("journal line for account %s not found", accountCode)
+}

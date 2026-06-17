@@ -2,21 +2,21 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	v1 "openerp/apps/service-gateway/api/v1"
 	"openerp/apps/service-gateway/db"
 	"openerp/apps/service-gateway/models"
 	"openerp/apps/service-gateway/workflow"
-	v1 "openerp/apps/service-gateway/api/v1"
 	"openerp/packages/pkg-logger"
-	"gorm.io/datatypes"
 
-	_ "openerp/apps/service-gateway/docs" // Swagger docs
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "openerp/apps/service-gateway/docs" // Swagger docs
 )
 
 func traceMiddleware() gin.HandlerFunc {
@@ -25,7 +25,7 @@ func traceMiddleware() gin.HandlerFunc {
 		if traceID == "" {
 			traceID = "trace-uuid-placeholder"
 		}
-		
+
 		ctx := context.WithValue(c.Request.Context(), logger.TraceIDKey, traceID)
 		ctx = context.WithValue(ctx, logger.TenantIDKey, c.GetHeader("X-Tenant-ID"))
 		ctx = context.WithValue(ctx, logger.UserIDKey, c.GetHeader("X-User-ID"))
@@ -33,6 +33,83 @@ func traceMiddleware() gin.HandlerFunc {
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
+}
+
+func seedFinanceDefaults(log *zap.Logger) {
+	accounts := []models.SysGLAccount{
+		{AccountCode: "1405", AccountName: "Inventory", AccountType: "Asset"},
+		{AccountCode: "2202", AccountName: "GR/IR Clearing", AccountType: "Liability"},
+		{AccountCode: "6401", AccountName: "Cost of Goods Sold", AccountType: "Expense"},
+	}
+	for _, account := range accounts {
+		if err := db.DB.Where("account_code = ?", account.AccountCode).FirstOrCreate(&account).Error; err != nil {
+			log.Error("默认总账科目初始化失败", zap.String("accountCode", account.AccountCode), zap.Error(err))
+		}
+	}
+
+	rules := []models.SysAccountDetermination{
+		{
+			TransactionType: v1.PostingEventGoodsReceipt,
+			ItemCategory:    v1.DefaultItemCategory,
+			DebitAccount:    "1405",
+			CreditAccount:   "2202",
+		},
+		{
+			TransactionType: v1.PostingEventGoodsIssue,
+			ItemCategory:    v1.DefaultItemCategory,
+			DebitAccount:    "6401",
+			CreditAccount:   "1405",
+		},
+	}
+	for _, rule := range rules {
+		err := db.DB.Where(
+			"transaction_type = ? AND item_category = ?",
+			rule.TransactionType,
+			rule.ItemCategory,
+		).FirstOrCreate(&rule).Error
+		if err != nil {
+			log.Error("默认科目决定规则初始化失败", zap.String("transactionType", rule.TransactionType), zap.String("itemCategory", rule.ItemCategory), zap.Error(err))
+		}
+	}
+}
+
+func seedMaterialDefaults(log *zap.Logger) {
+	materials := []models.SysMaterial{
+		{
+			MaterialCode:      "MAT-001",
+			MaterialName:      "Aluminum Sheet 2mm",
+			Category:          "RAW",
+			Unit:              "kg",
+			IsActive:          true,
+			Stock:             1250,
+			MovingAverageCost: 4.5,
+		},
+		{
+			MaterialCode:      "MAT-005",
+			MaterialName:      "Packaging Box Standard",
+			Category:          "PACK",
+			Unit:              "pcs",
+			IsActive:          true,
+			Stock:             12000,
+			MovingAverageCost: 0.5,
+		},
+	}
+	for _, material := range materials {
+		if err := db.DB.Where("material_code = ?", material.MaterialCode).FirstOrCreate(&material).Error; err != nil {
+			log.Error("默认物料初始化失败", zap.String("materialCode", material.MaterialCode), zap.Error(err))
+		}
+	}
+}
+
+func serverAddress() string {
+	port := strings.TrimSpace(os.Getenv("PORT"))
+	if port == "" {
+		port = "8080"
+	}
+	if strings.HasPrefix(port, ":") {
+		return port
+	}
+	return ":" + port
 }
 
 // @title OpenERP 企业级信息化中枢 API
@@ -49,6 +126,8 @@ func main() {
 	db.InitDB()
 	db.DB.AutoMigrate(&models.SysTask{})
 	db.DB.AutoMigrate(&models.SysPurchaseOrder{})
+	db.DB.AutoMigrate(&models.SysPurchaseReceipt{})
+	db.DB.AutoMigrate(&models.SysPurchaseReceiptLine{})
 	db.DB.AutoMigrate(&models.SysMaterial{})
 	db.DB.AutoMigrate(&models.SysBOM{})
 	db.DB.AutoMigrate(&models.SysFormField{})
@@ -124,6 +203,8 @@ func main() {
 		&models.SysEquipment{},
 		&models.SysEmployee{},
 	)
+	seedFinanceDefaults(bgLog)
+	seedMaterialDefaults(bgLog)
 
 	// 2. 初始化 BPMN 引擎客户端 (Zeebe)
 	workflow.InitZeebe()
@@ -175,15 +256,15 @@ func main() {
 	// 从真实的数据库读取待办列表
 	r.GET("/openerp/v1/tasks", func(c *gin.Context) {
 		log := logger.Ctx(c.Request.Context())
-		
+
 		var tasks []models.SysTask
-		
+
 		// 获取租户上下文，实现严格的数据隔离
 		tenantID, _ := c.Request.Context().Value(logger.TenantIDKey).(string)
 		if tenantID == "" {
 			tenantID = "TENANT-001"
 		}
-		
+
 		log.Info("正在从数据库拉取待办", zap.String("tenant", tenantID))
 
 		// GORM 查询
@@ -201,57 +282,11 @@ func main() {
 		})
 	})
 
-	// 提交采购单接口 (支持外部 API 接入)
-	r.POST("/openerp/v1/purchase-orders", func(c *gin.Context) {
-		log := logger.Ctx(c.Request.Context())
-		
-		var req struct {
-			OrderNo string                 `json:"orderNo"`
-			Title   string                 `json:"title"`
-			Amount  float64                `json:"amount"`
-			ExtData map[string]interface{} `json:"extData"`
-		}
-
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "请求参数解析失败"})
-			return
-		}
-
-		log.Info("收到采购单提交请求", zap.String("orderNo", req.OrderNo))
-
-		po := models.SysPurchaseOrder{
-			OrderNo:     req.OrderNo,
-			Title:       req.Title,
-			Amount:      req.Amount,
-			ApplicantID: "USER-1024",
-			DeptID:      "DEPT-FINANCE",
-		}
-
-		// 处理无限层级的自定义扩展字段 (序列化为 JSON)
-		if req.ExtData != nil {
-			extBytes, _ := json.Marshal(req.ExtData)
-			po.ExtData = datatypes.JSON(extBytes)
-		}
-
-		// 1. 业务落库
-		if err := db.DB.Create(&po).Error; err != nil {
-			log.Error("采购单持久化失败", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "采购单保存失败"})
-			return
-		}
-
-		// 2. 发起事件流转：交由 Zeebe 引擎进行调度
-		if err := workflow.TriggerPurchaseApprovalWorkflow(db.DB, po); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "工作流触发失败"})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"code": 200, 
-			"msg":  "采购申请提交成功，已推入流程引擎",
-			"data": po.ID,
-		})
-	})
+	// Purchasing API
+	r.POST("/openerp/v1/purchase-orders", v1.CreatePurchaseOrder)
+	r.GET("/openerp/v1/purchase-orders", v1.GetPurchaseOrders)
+	r.POST("/openerp/v1/purchase-receipts", v1.CreatePurchaseReceipt)
+	r.GET("/openerp/v1/purchase-receipts", v1.GetPurchaseReceipts)
 
 	// 动态表单元数据接口
 	r.GET("/openerp/v1/forms/:type/meta", v1.GetFormMeta)
@@ -292,6 +327,7 @@ func main() {
 
 	// Inventory & Goods Movement API
 	r.POST("/openerp/v1/goods-movement", v1.CreateGoodsMovement)
+	r.GET("/openerp/v1/goods-movement", v1.GetGoodsMovements)
 
 	// Production Orders API
 	r.POST("/openerp/v1/production-orders", v1.CreateProductionOrder)
@@ -307,8 +343,9 @@ func main() {
 	r.POST("/openerp/v1/finance/auto-post", v1.AutoPostJournalEntry)
 	r.GET("/openerp/v1/finance/journal-entries", v1.GetJournalEntries)
 
-	bgLog.Info("API Gateway 成功启动，监听在 :8080 端口")
-	if err := r.Run(":8080"); err != nil {
+	addr := serverAddress()
+	bgLog.Info("API Gateway 成功启动", zap.String("addr", addr))
+	if err := r.Run(addr); err != nil {
 		bgLog.Error("服务异常退出", zap.Error(err))
 	}
 }

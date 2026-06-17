@@ -52,9 +52,9 @@ export const DocumentLayout: React.FC<DocumentLayoutProps> = ({ title, children 
   };
 
   return (
-    <div className="document-layout" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f0f2f5' }}>
+    <div id="document-scroll-container" className="document-layout" style={{ height: '100%', overflowY: 'auto', backgroundColor: 'var(--bg-primary)' }}>
       {/* Action Bar */}
-      <div className="action-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 24px', backgroundColor: '#fff', borderBottom: '1px solid #e5e7eb' }}>
+      <div className="action-bar" style={{ position: 'sticky', top: 0, zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 24px', backgroundColor: 'rgba(255, 255, 255, 0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border-color)' }}>
         <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>{title}</h2>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <select className="btn btn-secondary" onChange={(e) => logger.info(`Copy From: ${e.target.value}`, traceId)} defaultValue="">
@@ -66,12 +66,12 @@ export const DocumentLayout: React.FC<DocumentLayoutProps> = ({ title, children 
             <option value="delivery">{t('Delivery')}</option>
             <option value="invoice">{t('Invoice')}</option>
           </select>
-          <button className="btn btn-primary" onClick={() => logger.info('Save clicked', traceId)}>{t('Save')}</button>
+          <button className="btn btn-primary active-press" onClick={() => logger.info('Save clicked', traceId)}>{t('Save')}</button>
         </div>
       </div>
       
       {/* Horizontal Anchor Nav */}
-      <nav style={{ backgroundColor: '#fff', borderBottom: '1px solid #e5e7eb', padding: '0 24px' }}>
+      <nav style={{ position: 'sticky', top: '57px', zIndex: 10, backgroundColor: 'rgba(255, 255, 255, 0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid var(--border-color)', padding: '0 24px' }}>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: '32px' }}>
           {['header', 'lines', 'logistics', 'accounting'].map((id) => (
             <li key={id} style={{ margin: 0 }}>
@@ -81,12 +81,12 @@ export const DocumentLayout: React.FC<DocumentLayoutProps> = ({ title, children 
                 style={{
                   display: 'inline-block',
                   padding: '16px 4px',
-                  color: activeSection === id ? '#2563eb' : '#4b5563',
+                  color: activeSection === id ? 'var(--text-primary)' : 'var(--text-secondary)',
                   fontWeight: activeSection === id ? 600 : 500,
                   fontSize: '14px',
                   textDecoration: 'none',
-                  transition: 'all 0.2s',
-                  borderBottom: activeSection === id ? '3px solid #2563eb' : '3px solid transparent',
+                  transition: 'all 0.2s ease',
+                  borderBottom: activeSection === id ? '2px solid var(--text-primary)' : '2px solid transparent',
                   marginBottom: '-1px'
                 }}
               >
@@ -98,13 +98,9 @@ export const DocumentLayout: React.FC<DocumentLayoutProps> = ({ title, children 
         </ul>
       </nav>
       
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', flexDirection: 'column' }}>
-        {/* Content */}
-        <div id="document-scroll-container" style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-            {children}
-          </div>
-        </div>
+      {/* Content */}
+      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+        {children}
       </div>
     </div>
   );

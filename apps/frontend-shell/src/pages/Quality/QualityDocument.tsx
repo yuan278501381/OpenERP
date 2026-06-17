@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DocumentLayout } from '../../components/Document/DocumentLayout';

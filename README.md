@@ -70,6 +70,10 @@ go run main.go
 \`\`\`
 *默认监听在 `http://localhost:8080`，启动时会自动同步数据库并初始化演示测试数据。*
 
+可选环境变量：
+- `PORT`：后端监听端口，例如 `PORT=18080 go run main.go`
+- `OPENERP_DB_DSN`：PostgreSQL 连接字符串，未设置时使用本地默认开发 DSN
+
 ### 前端看板 (Frontend Shell)
 \`\`\`bash
 cd apps/frontend-shell
@@ -77,6 +81,8 @@ npm install
 npm run dev
 \`\`\`
 *默认监听在 `http://localhost:3000`，极致流畅的交互等您检阅。*
+
+如后端不在 `8080`，可设置 `VITE_API_BASE_URL`，例如 `VITE_API_BASE_URL=http://localhost:18080 npm run dev`。
 
 ---
 
